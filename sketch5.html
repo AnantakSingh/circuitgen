@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Circle Burst — p5.js</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Bitcount+Grid+Single:wght@100..900&display=swap" rel="stylesheet">
+    <style>
+      html, body {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        font-family: 'Bitcount Grid Single';
+        background: #000;
+      }
+      canvas {
+        display: block;
+      }
+      
+      /* Sticky instruction header */
+      #instructions {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        background-color: #f8f8f8;
+        color: #333;
+        font-size: 18px;
+        text-align: center;
+        padding: 10px 0;
+        box-shadow: 0px 2px 5px rgba(0,0,0,0.2);
+        z-index: 1000;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Instructions at the top -->
+    <div id="instructions">CLICK MOUSE</div>
+    <script>
+let dSwitcher = [];
+
+function rDir(){
+  let directions = [0,1,2,3,4,5];
+  return random(directions);
+}
+
+class wireGen {
+  constructor(x,y,z){
+    this.loc = createVector(x,y,z);
+    this.loc1 = [];
+    this.col = color(random(10,200),random(0,80),random(150,255),random(10,100));
+    this.d = rDir();
+    this.sTime = millis() + random(200,2000);
+    this.circles = []; 
+    this.sSize = 5;
+  }
+  
+  switchD(){
+    
+    if(this.d==0)
+      this.loc.y-=5;
+    else if(this.d==1)
+      this.loc.x+=5;
+    else if(this.d==2)
+      this.loc.y+=5;
+    else if(this.d==3)
+      this.loc.x-=5;
+    else if(this.d==4)
+      this.loc.z-=5;
+    else if(this.d==5)
+      this.loc.z+=5;
+    
+    this.loc1.push({x:this.loc.x, y:this.loc.y, z:this.loc.z, col:this.col})
+    
+    if (millis() > this.sTime) {
+      this.d=rDir();
+      this.col=color(random(10,200),random(0,80),random(150,255),random(10,100));
+      this.sTime = millis() + random(200,2000);
+      let cSize = random(6,20);
+      this.circles.push({x:this.loc.x, y:this.loc.y, z:this.loc.z, cSize, col:this.col});
+    }
+  }
+      
+  display(){
+    
+      let w = 0;
+      for (w of this.loc1){
+        push();
+        fill(w.col);
+        translate(w.x,w.y,w.z);
+        box(this.sSize)
+        pop();
+      }
+      let s = 0;
+      for (s of this.circles){
+        push();
+        fill(s.col);
+        translate(s.x,s.y,s.z);
+        sphere(s.cSize)
+        pop();
+      }
+    }
+}
+
+function setup(){
+  createCanvas(windowWidth,windowHeight,WEBGL);
+  
+ 
+  noStroke();
+}
+
+function draw(){
+  background(100,200,100);
+  let s = 0;
+   orbitControl();
+  for (s of dSwitcher){
+    s.switchD();
+    s.display();
+  
+  }
+}
+
+function mousePressed(){
+  dSwitcher.push(new wireGen(random(-300,300),random(-300,300),random(-300,300)));
+}
+    </script>
+  </body>
+</html>

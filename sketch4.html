@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Circle Burst — p5.js</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Bitcount+Grid+Single:wght@100..900&display=swap" rel="stylesheet">
+    <style>
+      html, body {
+        margin: 0;
+        padding: 0;
+        font-family: 'Bitcount Grid Single';
+        overflow: hidden;
+        background: #000;
+      }
+      canvas {
+        display: block;
+      }
+
+      /* Sticky instruction header */
+      #instructions {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        background-color: #f8f8f8;
+        color: #333;
+        font-size: 18px;
+        text-align: center;
+        padding: 10px 0;
+        box-shadow: 0px 2px 5px rgba(0,0,0,0.2);
+        z-index: 1000;
+      }
+    </style>
+  </head>
+  <body>
+
+    <!-- Instructions at the top -->
+    <div id="instructions">DRAG MOUSE</div>
+
+    <script>
+      let dSwitcher = [];
+
+      function rDir(){
+        let directions = [0,1,2,3];
+        return random(directions);
+      }
+
+      class wireGen {
+        constructor(x,y){
+          this.x = this.x1 = x;
+          this.y = this.y1 = y;
+          this.col = color(random(10,200),random(0,80),random(150,255),random(10,100));
+          this.d = rDir();
+          this.sTime = millis() + random(500,3000);
+          this.circles = []; 
+        }
+
+        switchD(){
+          this.x1 = this.x;
+          this.y1 = this.y;
+
+          if(this.d==0) this.y-=5;
+          else if(this.d==1) this.x+=5;
+          else if(this.d==2) this.y+=5;
+          else if(this.d==3) this.x-=5;
+
+          if (millis() > this.sTime) {
+            this.d=rDir();
+            this.col=color(random(10,200),random(0,80),random(150,255),random(10,100));
+            this.sTime = millis() + random(500,3000);
+            let cSize = random(20,40);
+            this.circles.push({x:this.x, y:this.y, cSize, col:this.col});
+          }
+        }
+
+        display(){
+          stroke(this.col);
+          line(this.x1,this.y1,this.x,this.y);
+
+          noStroke();
+          fill(this.col);
+          circle(this.x,this.y,10);
+
+          for (let c of this.circles){
+            noStroke();
+            fill(c.col);
+            circle(c.x,c.y,c.cSize);
+          }
+        }
+      }
+
+      function setup(){
+        // Create canvas below the instructions
+        createCanvas(windowWidth, windowHeight - document.getElementById("instructions").offsetHeight)
+          .position(0, document.getElementById("instructions").offsetHeight);
+        background(255);
+        strokeWeight(5);
+      }
+
+      function draw(){
+        for (let s of dSwitcher){
+          s.switchD();
+          s.display();
+        }
+      }
+
+      function mouseDragged(){
+        dSwitcher.push(new wireGen(mouseX,mouseY));
+      }
+    </script>
+  </body>
+</html>

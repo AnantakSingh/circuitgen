@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>3D Wire Generator</title>
+  <script src="https://cdn.jsdelivr.net/npm/p5@1.11.10/lib/p5.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/p5@1.11.10/lib/addons/p5.sound.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Bitcount+Grid+Single:wght@100..900&display=swap" rel="stylesheet">
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      font-family: 'Bitcount Grid Single';
+      background: #000;
+    }
+    canvas {
+      display: block;
+    }
+    
+      /* Sticky instruction header */
+      #instructions {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        background-color: #f8f8f8;
+        color: #333;
+        font-size: 18px;
+        text-align: center;
+        padding: 10px 0;
+        box-shadow: 0px 2px 5px rgba(0,0,0,0.2);
+        z-index: 1000;
+      }
+  </style>
+</head>
+<body>
+  <!-- Instructions at the top -->
+    <div id="instructions">CLICK, SCROLL OR MOVE MOUSE</div>
+<script>
+let dSwitcher = [];
+let notes = [293.66,329.63,349.23,392.00,440.00,466.16,523.25];
+
+function rDir(){
+  let directions = [0,1,2,3,4,5];
+  return random(directions);
+}
+
+class wireGen {
+  constructor(x,y,z){
+    this.loc = createVector(x,y,z);
+    this.loc1 = [];
+    this.col = color(random(10,200),random(0,80),random(150,255),random(10,100));
+    this.d = rDir();
+    this.sTime = millis() + random(200,2000);
+    this.circles = []; 
+    this.sSize = 5;
+    
+    this.osc = new p5.Oscillator('sine'); // fixed type
+    this.osc.start();
+    this.osc.amp(0);
+  }
+  
+  switchD(){    
+    if(this.d==0) this.loc.y-=5;
+    else if(this.d==1) this.loc.x+=5;
+    else if(this.d==2) this.loc.y+=5;
+    else if(this.d==3) this.loc.x-=5;
+    else if(this.d==4) this.loc.z-=5;
+    else if(this.d==5) this.loc.z+=5;
+    
+    this.loc1.push({x:this.loc.x, y:this.loc.y, z:this.loc.z, col:this.col});
+    
+    if (millis() > this.sTime) {
+      this.d = rDir();
+      this.col = color(random(10,200),random(40,100),random(150,255),random(50,160));
+      this.sTime = millis() + random(200,2000);
+      let cSize = random(6,20);
+      this.circles.push({x:this.loc.x, y:this.loc.y, z:this.loc.z, cSize, col:this.col});
+      
+      let freq = random(notes);
+      this.osc.freq(freq);
+      this.osc.amp(0.1, 0.01);   // fade in quickly
+      this.osc.amp(0, 0.2, 0.05); // fade out over 0.2 seconds after 0.05 delay
+      //this.osc.amp(0.1, 0.05);
+    }
+  }
+      
+  display(){    
+    for (let w of this.loc1){
+      push();
+      fill(w.col);
+      translate(w.x, w.y, w.z);
+      box(this.sSize);
+      pop();
+    }
+    for (let s of this.circles){
+      push();
+      fill(s.col);
+      translate(s.x, s.y, s.z);
+      sphere(s.cSize);
+      pop();
+    }
+  }
+}
+
+function setup(){
+  createCanvas(windowWidth, windowHeight, WEBGL);
+  background(20,20,40);
+  noStroke();
+}
+
+function draw(){
+  
+  orbitControl();
+  for (let s of dSwitcher){
+    s.switchD();
+    s.display();
+  }
+}
+
+function mousePressed(){
+  userStartAudio(); // unlock audio on first click
+  dSwitcher.push(new wireGen(random(-300,300),random(-300,300),random(-300,300)));
+}
+
+function windowResized(){
+  resizeCanvas(windowWidth, windowHeight);
+}
+</script>
+</body>
+</html>
